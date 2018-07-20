@@ -5,3 +5,4 @@ I keep meaning to write down a log of events! Going to try again.
 * 2018-07-20 12:01 Fri - Task description up! reading...
 * 2018-07-20 12:37 Fri - Went to eat
 * 2018-07-20 15:53 Fri - Back, came up with plan. OCaml for engine, Perl5 for binary in/out. Use JSON to do IPC
+* 2018-07-20 18.41 Fri - Started the trace file parser - given a file it will print to stdout the commands and the params if the command takes any

@@ -17,8 +17,10 @@ let opposite_harmonics = function
 type state = {
   mutable energy: int;
   mutable harmonics: harmonics;
+  mutable prev_harmonics: harmonics;
   mutable matrix: Matrix.matrix_t;
   mutable bots: Bot.bot_t list;
+  mutable prev_botcount: int;
 }
 
 let resolution = ref 0
@@ -26,8 +28,10 @@ let resolution = ref 0
 let state = {
   energy    = 0;
   harmonics = Low;
+  prev_harmonics = Low;
   matrix    = Matrix.empty_matrix();
   bots      = [Bot.initial_bot ()];
+  prev_botcount = 1;
 }
 
 let state_to_string state =
@@ -48,25 +52,40 @@ let flip bot args =
 
 let smove bot args =
   let lld = args |> member "lld" |> to_list |> filter_int |> Coordinate.from_list in
-  bot.Bot.pos <- Coordinate.add bot.Bot.pos lld
+  bot.Bot.pos <- Coordinate.add bot.Bot.pos lld;
+  state.energy <- state.energy + (2 * Coordinate.mlen(lld))
+
+let fill bot args =
+  let nd = args |> member "nd" |> to_list |> filter_int |> Coordinate.from_list in
+  let c = Coordinate.add bot.Bot.pos nd in
+  if Matrix.get state.matrix c == Voxel.Void then begin
+    Matrix.set state.matrix c Voxel.Full;
+    state.energy <- state.energy + 12
+  end else begin
+    Matrix.set state.matrix c Voxel.Void;
+    state.energy <- state.energy + 6
+  end
 
 let execute_cmd cmd bot args =
   match cmd with
   | "halt" -> halt bot args
   | "wait" -> wait bot args
   | "flip" -> flip bot args
-  | "smove" -> smove bot args
+  | "smove " -> smove bot args
+  | "fill " -> fill bot args
   | _ -> raise (Error ("Invalid cmd: " ^ cmd))
 
 let add_step_world_energy () =
-  match state.harmonics with
+  match state.prev_harmonics with
   | High -> (state.energy <- state.energy + 30 * !resolution * !resolution * !resolution)
   | Low  -> (state.energy <- state.energy +  3 * !resolution * !resolution * !resolution)
 
 let add_step_bot_energy () =
-  state.energy <- state.energy + 20 * (List.length state.bots)
+  state.energy <- state.energy + 20 * state.prev_botcount
 
 let execute_step trace_stream =
+  state.prev_harmonics <- state.harmonics;
+  state.prev_botcount <- (List.length state.bots);
   let bots = state.bots in
   List.iter (fun bot ->
     let cmd_json = Stream.next trace_stream in

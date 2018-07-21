@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# OCaml stuff
+sudo apt install ocamlbuild opam
+opam init
+opam install yojson
+
+

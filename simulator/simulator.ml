@@ -2,26 +2,20 @@
 open Printf
 open Yojson.Basic.Util
 
-open Coordinate
-open Voxel
-open Matrix
-open Bot
-
 type resolution = int
-
 type harmonics = High | Low
 
 type state = {
   energy: int;
   harmonics: harmonics;
-  matrix: matrix_t;
-  bots: bot_t list;
+  matrix: Matrix.matrix_t;
+  bots: Bot.bot_t list;
 }
 
 let state = {
   energy    = 0;
   harmonics = Low;
-  matrix    = empty_matrix();
+  matrix    = Matrix.empty_matrix();
   bots      = [];
 }
 

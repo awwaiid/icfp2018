@@ -68,3 +68,21 @@ sub print_matrix {
     print "\n\n";
   }
 }
+
+
+=head1 SYNOPSIS
+
+  model_to_json.pl -f <infile.mdl>
+  model_to_json.pl -f <infile.mdl> -o <output.json>
+
+=head1 DESCRIPTION
+
+  The model_to_json script will, given an mdl file
+  pull the first byte off and convert to decimal
+  to find the resolution then use that to figure
+  out which cells of the model matrix are filled
+  or not filled.  The value of the filled cells
+  are 1 and the unfilled cells are 0. A json
+  structure is returned with two keys, 'resolution'
+  which holds resolution of the model and 'model'
+  which is an R x R x R matrix of 0's and 1's.

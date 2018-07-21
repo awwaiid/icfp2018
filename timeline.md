@@ -14,3 +14,5 @@ I keep meaning to write down a log of events! Going to try again.
 * 2018-07-21 08:47 Sat - Up and about, Brock caffinating Mike heading over. Only a few hours left in the lightning round!
 * 2018.07.21.10.46 Sat - Got tracifier.pl converting json files to nbt except for commands fusionp, fusions, and fission
 * 2018-07-21 11:29 Sat - Submitted a simple improvement to 003 -- got "success!" from their server!
+* 2018-07-21 11:48 Sat - We are now going through and hand-fixing a few more to avoid high-harmonics
+* 2018-07-21 12:26 Sat - Submitted again! Now going to go wander about for coffee/lunch

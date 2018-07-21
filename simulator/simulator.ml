@@ -89,6 +89,7 @@ let execute_step trace_stream =
     execute_cmd cmd bot cmd_json
   ) bots;
   printf "State:\n%s" (state_to_string state);
+  printf "Grounded: %s\n" (string_of_bool (Matrix.is_grounded state.matrix));
   flush stdout
 
 let main () =

@@ -67,8 +67,8 @@ let execute_cmd cmd bot args =
   | "halt" -> halt bot args
   | "wait" -> wait bot args
   | "flip" -> flip bot args
-  | "smove " -> smove bot args
-  | "fill " -> fill bot args
+  | "smove" -> smove bot args
+  | "fill" -> fill bot args
   | _ -> raise (Error ("Invalid cmd: " ^ cmd))
 
 let add_step_world_energy () =

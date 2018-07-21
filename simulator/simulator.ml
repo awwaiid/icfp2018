@@ -55,10 +55,10 @@ let fill bot args =
   let nd = args |> member "nd" |> to_list |> filter_int |> Coordinate.from_list in
   let c = Coordinate.add bot.Bot.pos nd in
   if Matrix.get state.matrix c == Voxel.Void then begin
-    Matrix.set state.matrix c Voxel.Full;
+    state.matrix <- Matrix.set state.matrix c Voxel.Full;
     state.energy <- state.energy + 12
   end else begin
-    Matrix.set state.matrix c Voxel.Void;
+    state.matrix <- Matrix.set state.matrix c Voxel.Void;
     state.energy <- state.energy + 6
   end
 

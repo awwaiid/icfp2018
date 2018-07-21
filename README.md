@@ -1,2 +1,3 @@
-# icfp2018
+# icfp2018 -- Team LuciferaseBugs!
+
 ICFP Programming Contest!

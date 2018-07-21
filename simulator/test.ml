@@ -10,7 +10,10 @@ let ok msg result =
   | false -> printf "not ok %i - %s\n" !test_count msg
 
 let is msg a b =
-  if a == b then ok msg true else ok msg false
+  if a == b then
+    ok msg true
+  else
+    ok msg false
 
 let plan n =
   printf "1..%i\n" n

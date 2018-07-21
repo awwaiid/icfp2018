@@ -7,3 +7,4 @@ I keep meaning to write down a log of events! Going to try again.
 * 2018-07-20 15:53 Fri - Back, came up with plan. OCaml for engine, Perl5 for binary in/out. Use JSON to do IPC
 * 2018-07-20 18.41 Fri - Started the trace file parser - given a file it will print to stdout the commands and the params if the command takes any
 * 2018-07-20 21:35 Fri - Got simulator compiling and taking the most simple of commands. Doesn't know how to go through the lifecycle of bots yet, that's next
+* 2018-07-20 21:51 Fri - Just did some Base-3 whiteboarding!

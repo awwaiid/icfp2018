@@ -45,11 +45,13 @@ let rec is_grounded' grounded unknown =
   if CoordinateSet.is_empty also_grounded then
     grounded
   else
-    is_grounded' (CoordinateSet.union grounded also_grounded) unknown
+    let also_grounded = is_grounded' also_grounded unknown in
+    CoordinateSet.union grounded also_grounded
 
 let is_grounded m =
 
+  (* Get our seed of things we know are grounded *)
   let grounded, unknown = CoordinateSet.partition (fun (x,y,z) -> y == 0) m in
 
-  (* Ruturn whether everything is grounded *)
+  (* Ruturn whether everything else is grounded *)
   CoordinateSet.equal (is_grounded' grounded unknown) m

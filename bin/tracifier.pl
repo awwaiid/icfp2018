@@ -73,8 +73,6 @@ sub nbt_to_json {
   my @json = ();
   while (my $cmd = read_and_parse_next( $fh ) ) {
 
-    $cmd_cnt++;
-
     if( $dispatch{ $cmd } ) {
       push @json, $dispatch{ $cmd }();
     }
@@ -100,6 +98,9 @@ sub nbt_to_json {
     else {
       warn "ERROR: Unknown command $cmd"
     }
+
+    $json[-1]{sequence} = $cmd_cnt;
+    $cmd_cnt++;
   }
 
   encode_json \@json;

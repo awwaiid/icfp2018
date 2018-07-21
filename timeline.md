@@ -13,3 +13,4 @@ I keep meaning to write down a log of events! Going to try again.
 * 2018-07-20 23:38 Fri - About done for the night ... running some large sims now. Tomorrow we'll enter the lightning round!
 * 2018-07-21 08:47 Sat - Up and about, Brock caffinating Mike heading over. Only a few hours left in the lightning round!
 * 2018.07.21.10.46 Sat - Got tracifier.pl converting json files to nbt except for commands fusionp, fusions, and fission
+* 2018-07-21 11:29 Sat - Submitted a simple improvement to 003 -- got "success!" from their server!

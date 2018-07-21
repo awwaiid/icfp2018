@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 
 use v5.26;
-
 use Data::Dumper;
 use Getopt::Long;
 use JSON::XS;
+use File::Slurp;
 
 my ($file,
     $outfile,
@@ -24,23 +24,23 @@ my %dispatch = (
   'flip' => sub { '11111101' },
   '11111101' => sub { {'cmd' => 'flip'} },
 
-  'smove' => sub { '0100' },
-  '0100' => sub { {'cmd' => "smove ", 'lld' => get_linear_coords(@_) } },
+  'smove' => sub { my ( $llda, $lldi ) = get_lld_values(@_); ("00${llda}0100", "000$lldi")  },
+  '0100' => sub { {'cmd' => "smove", 'lld' => get_linear_coords(@_) } },
 
   'lmove' => sub { '1100' },
   '1100' => sub { my ($sld1, $sld2) = get_linear_coords(@_);  {'cmd' =>  "lmove ", "sld1" => $sld1, "sld2" => $sld2 } },
 
   'fusionp' => sub { '111' },
-  '111' => sub { "fusionp " . join(',', @_) },
+  '111' => sub { "fusionp" . join(',', @_) },
 
   'fusions' => sub { '110' },
-  '110' => sub { "fusions " . join(',', @_) },
+  '110' => sub { "fusions" . join(',', @_) },
 
   'fission' => sub { '101' },
-  '101' => sub { "fission " . join(',', @_) },
+  '101' => sub { "fission" . join(',', @_) },
 
-  'fill' => sub { '011' },
-  '011' => sub { { 'cmd' => "fill ", "nd" => get_near_coord_diff(@_) } },
+  'fill' => sub { return sprintf("%.5b" . '011', nd_vec_to_decimal(@_) ) },
+  '011' => sub { { 'cmd' => "fill", "nd" => get_near_coord_diff(@_) } },
 );
 
 my $out;
@@ -51,13 +51,13 @@ elsif( $file =~ /json$/ ) {
   $out = json_to_nbt($file)
 }
 else {
-  say "Whatta ya doin'! Either .json file or .nbt file! Bad monkey!";
+  warn "Whatta ya doin'! Either .json file or .nbt file! Bad monkey!";
   exit;
 }
 
 my $fh = *STDOUT;
 if( $outfile ) {
-  open $fh, '>', $outfile or say "Couldn't open file $outfile: $! - printing to stdout instead";
+  open $fh, '>', $outfile or warn "Couldn't open file $outfile: $! - printing to stdout instead";
 }
 
 print $fh $out;
@@ -73,7 +73,6 @@ sub nbt_to_json {
   my @json = ();
   while (my $cmd = read_and_parse_next( $fh ) ) {
 
-#    print  "$cmd_cnt: $cmd => ";
     $cmd_cnt++;
 
     if( $dispatch{ $cmd } ) {
@@ -82,7 +81,6 @@ sub nbt_to_json {
     elsif( $cmd =~ /(0100|1100)$/ ) {
       if( $dispatch{ substr($cmd, 4, 4 )} ) {
         my $next_coords = read_and_parse_next( $fh );
-#        print "next coords: $next_coords ";
         push @json, $dispatch{ substr($cmd, 4, 4 )}( substr($cmd, 0, 4), $next_coords );
       }
       else {
@@ -104,17 +102,49 @@ sub nbt_to_json {
     }
   }
 
-#say Dumper(\@json);
   encode_json \@json;
 }
 
 sub json_to_nbt {
+  my $file = shift;
+
+  # combine two lines
+  my $json = read_file( $file );
+  my $commands = decode_json( $json );
+
+  my $out = undef;
+  for my $cmd_struct ( @{ $commands } ) {
+    my $cmd = $cmd_struct->{'cmd'};
+
+    if( $cmd eq 'smove' ) {
+      my $lld = $cmd_struct->{'lld'};
+      map { $out .= pack "B8", $_ } $dispatch{$cmd}($lld);
+    }
+    elsif( $cmd eq 'lmove' ) {
+      my $sld1 = $cmd_struct->{'sld1'};
+      my $sld2 = $cmd_struct->{'sld2'};
+    }
+    elsif( $cmd eq 'fission' ){
+      my $nd = $cmd_struct->{'nd'};
+      my $m = $cmd_struct->{'m'};
+    }
+    elsif( $cmd eq 'fusionp' || $cmd eq 'fusions' || $cmd eq 'fill') {
+      my $nd = $cmd_struct->{'nd'};
+      $out .= pack "B8", $dispatch{$cmd}($nd);
+    }
+    else {
+      $out .= pack "B8", $dispatch{$cmd}();
+    }
+  }
+
+  return $out;
 }
 
 sub read_and_parse_next {
   my $fh = shift;
 
   my $bytes_read = read $fh, my $bytes, 1;
+
   my ($cmd) = unpack "B8", $bytes;
   return $cmd;
 }
@@ -158,6 +188,24 @@ sub decimal_to_base3 {
   my $digit3 = int($dec / 3) - 1;
 
   return [$digit3, $digit2, $digit1];
+}
+
+sub nd_vec_to_decimal {
+  my $nd = shift;
+  return ($nd->[0] + 1) * 9 + ($nd->[1] + 1) * 3 + ($nd->[2] + 1);
+}
+
+sub  get_lld_values {
+  my $lld = shift;
+
+  my ( $llda, $lldi );
+  for my $i (0..2) {
+    next unless $lld->[$i];
+    $llda = sprintf("%.2b", $i + 1);
+    $lldi = sprintf("%.5b", $lld->[$i] + 15);
+  }
+
+  return ($llda, $lldi);
 }
 
 

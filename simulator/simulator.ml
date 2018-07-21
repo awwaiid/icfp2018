@@ -17,10 +17,8 @@ let opposite_harmonics = function
 type state = {
   mutable energy: int;
   mutable harmonics: harmonics;
-  mutable prev_harmonics: harmonics;
   mutable matrix: Matrix.matrix_t;
   mutable bots: Bot.bot_t list;
-  mutable prev_botcount: int;
 }
 
 let resolution = ref 0
@@ -28,10 +26,8 @@ let resolution = ref 0
 let state = {
   energy    = 0;
   harmonics = Low;
-  prev_harmonics = Low;
   matrix    = Matrix.empty_matrix();
   bots      = [Bot.initial_bot ()];
-  prev_botcount = 1;
 }
 
 let state_to_string state =
@@ -76,24 +72,22 @@ let execute_cmd cmd bot args =
   | _ -> raise (Error ("Invalid cmd: " ^ cmd))
 
 let add_step_world_energy () =
-  match state.prev_harmonics with
+  match state.harmonics with
   | High -> (state.energy <- state.energy + 30 * !resolution * !resolution * !resolution)
   | Low  -> (state.energy <- state.energy +  3 * !resolution * !resolution * !resolution)
 
 let add_step_bot_energy () =
-  state.energy <- state.energy + 20 * state.prev_botcount
+  state.energy <- state.energy + 20 * (List.length state.bots)
 
 let execute_step trace_stream =
-  state.prev_harmonics <- state.harmonics;
-  state.prev_botcount <- (List.length state.bots);
+  add_step_world_energy ();
+  add_step_bot_energy ();
   let bots = state.bots in
   List.iter (fun bot ->
     let cmd_json = Stream.next trace_stream in
     let cmd = member "cmd" cmd_json |> to_string in
     execute_cmd cmd bot cmd_json
   ) bots;
-  add_step_world_energy ();
-  add_step_bot_energy ();
   printf "State:\n%s" (state_to_string state);
   flush stdout
 

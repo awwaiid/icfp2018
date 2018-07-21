@@ -5,7 +5,6 @@ use v5.26;
 use Data::Dumper;
 use Getopt::Long;
 use JSON::XS;
-use File::Slurp;
 
 my ($file,
     $outfile,
@@ -45,13 +44,27 @@ for my $x (0..$r) {
   }
 }
 
+my $json = encode_json({ "resolution" => $resolution, "model" => $model});
 
-for my $y (0..$r) {
-  for my $z (0..$r) {
-    for my $x (0..$r) {
-      print $model->[$x][$y][$z] . " ";
+my $fh = *STDOUT;
+if( $outfile ) {
+  open $fh, '>', $outfile or warn "Couldn't open file $outfile: $! - printing to stdout instead";
+}
+
+print $fh $json;
+
+# print_matrix();
+
+sub print_matrix {
+  say "Columns = z Rows = x";
+  for my $y (0..$r) {
+    say "Y: $y";
+    for my $z (0..$r) {
+      for my $x (0..$r) {
+        print $model->[$x][$y][$z] . " ";
+      }
+      print "\n";
     }
-    print "\n";
+    print "\n\n";
   }
-  print "\n\n";
 }

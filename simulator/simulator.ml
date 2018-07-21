@@ -21,6 +21,8 @@ type state = {
   mutable bots: Bot.bot_t list;
 }
 
+let resolution = ref 0
+
 let state = {
   energy    = 0;
   harmonics = Low;
@@ -31,41 +33,73 @@ let state = {
 let state_to_string state =
   (sprintf "Energy: %i\n" state.energy)
   ^ (sprintf "Harmonics: %s\n" (harmonics_to_string state.harmonics))
+  ^ (sprintf "Bots: %s\n" (String.concat ";" (List.map Bot.bot_to_string state.bots)))
 
-let extract_cmd json =
-  [json]
-    |> filter_member "cmd"
-    |> filter_string
+let halt bot args =
+  printf "... halting\n";
+  state.bots <- []
 
-let wait args =
+let wait bot args =
   printf "... waiting\n"
 
-let flip args =
+let flip bot args =
   printf "... flipping\n";
   state.harmonics <- (opposite_harmonics state.harmonics)
 
-let execute_cmd cmd args =
+let smove bot args =
+  let lld = args |> member "lld" |> to_list |> filter_int |> Coordinate.from_list in
+  bot.Bot.pos <- Coordinate.add bot.Bot.pos lld
+
+let execute_cmd cmd bot args =
   match cmd with
-  | "wait" -> wait args
-  | "flip" -> flip args
+  | "halt" -> halt bot args
+  | "wait" -> wait bot args
+  | "flip" -> flip bot args
+  | "smove" -> smove bot args
   | _ -> raise (Error ("Invalid cmd: " ^ cmd))
 
+let add_step_world_energy () =
+  match state.harmonics with
+  | High -> (state.energy <- state.energy + 30 * !resolution * !resolution * !resolution)
+  | Low  -> (state.energy <- state.energy +  3 * !resolution * !resolution * !resolution)
+
+let add_step_bot_energy () =
+  state.energy <- state.energy + 20 * (List.length state.bots)
+
+let execute_step trace_stream =
+  let bots = state.bots in
+  List.iter (fun bot ->
+    let cmd_json = Stream.next trace_stream in
+    let cmd = member "cmd" cmd_json |> to_string in
+    execute_cmd cmd bot cmd_json
+  ) bots;
+  add_step_world_energy ();
+  add_step_bot_energy ();
+  printf "State:\n%s" (state_to_string state);
+  flush stdout
 
 let main () =
 
   let json_model = Yojson.Basic.from_file "world.json" in
-  let resolution = member "resolution" json_model |> to_int in
-  printf "Model resolution: %i\n" resolution;
+  resolution := member "resolution" json_model |> to_int;
+  printf "Model resolution: %i\n" !resolution;
   flush stdout;
 
-  let cmd_stream = Yojson.Basic.stream_from_channel stdin in
+  let trace_stream = Yojson.Basic.stream_from_channel stdin in
+  while List.length state.bots > 0 do
+    execute_step trace_stream
+  done
+
+  (*
   Stream.iter (fun cmd_json ->
     let command = member "cmd" cmd_json |> to_string in
     printf "Command: %s\n" command;
-    execute_cmd command cmd_json;
+    let bot = (List.hd state.bots) in
+    execute_cmd command bot cmd_json;
     printf "State:\n%s" (state_to_string state);
     flush stdout
-  ) cmd_stream
+  ) trace_stream
+  *)
 
 let () = main ()
 

@@ -27,3 +27,5 @@ let is_short_ld ld = is_linear_coordinate_difference ld && (mlen ld) <= 5
 let is_long_ld ld = is_linear_coordinate_difference ld && (mlen ld) <= 15
 let is_nd d = 0 < (mlen d) && (mlen d) <= 2 && (clen d) == 1
 
+let from_list lst =
+  (List.nth lst 0),(List.nth lst 1),(List.nth lst 2)

@@ -14,6 +14,11 @@ let add a b =
   let x2, y2, z2 = b in
   (x1+x2), (y1+y2), (z1+z2)
 
+let sub a b =
+  let x1, y1, z1 = a in
+  let x2, y2, z2 = b in
+  (x1-x2), (y1-y2), (z1-z2)
+
 let mlen (dx, dy, dz) = (abs dx) + (abs dy) + (abs dz)
 
 let clen (dx, dy, dz) = max dx (max dy dz)
@@ -29,3 +34,5 @@ let is_nd d = 0 < (mlen d) && (mlen d) <= 2 && (clen d) == 1
 
 let from_list lst =
   (List.nth lst 0),(List.nth lst 1),(List.nth lst 2)
+
+let touches c1 c2 = mlen (sub c1 c2) == 1

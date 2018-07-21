@@ -34,3 +34,22 @@ let toggle m c =
   | Full -> set m c Void
   | Void -> set m c Full
 
+let touches_something_in grounded unknown_v =
+  CoordinateSet.exists (touches unknown_v) grounded
+
+let also_grounded grounded unknown =
+  CoordinateSet.partition (touches_something_in grounded) unknown
+
+let rec is_grounded' grounded unknown =
+  let also_grounded, unknown = also_grounded grounded unknown in
+  if CoordinateSet.is_empty also_grounded then
+    grounded
+  else
+    is_grounded' (CoordinateSet.union grounded also_grounded) unknown
+
+let is_grounded m =
+
+  let grounded, unknown = CoordinateSet.partition (fun (x,y,z) -> y == 0) m in
+
+  (* Ruturn whether everything is grounded *)
+  CoordinateSet.equal (is_grounded' grounded unknown) m

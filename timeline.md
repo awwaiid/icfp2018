@@ -11,3 +11,5 @@ I keep meaning to write down a log of events! Going to try again.
 * 2018-07-20 22:23 Fri - got tracifier.pl working converting nbt files to json and outputing to stdout or a given file
 * 2018-07-20 22:54 Fri - Simulator has basic steps, but is a bit mutable
 * 2018-07-20 23:38 Fri - About done for the night ... running some large sims now. Tomorrow we'll enter the lightning round!
+* 2018-07-21 08:47 Sat - Up and about, Brock caffinating Mike heading over. Only a few hours left in the lightning round!
+

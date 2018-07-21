@@ -19,6 +19,8 @@ type matrix_t = CoordinateSet.t
 
 let empty_matrix () = CoordinateSet.empty
 
+let voxel_count m = CoordinateSet.cardinal m
+
 let set m c v =
   match v with
   | Full -> CoordinateSet.add c m

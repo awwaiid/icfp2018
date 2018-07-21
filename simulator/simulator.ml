@@ -4,14 +4,7 @@ open Yojson.Basic.Util
 
 exception Error of string
 
-let state = ref {
-  State.
-  energy    = 0;
-  harmonics = State.Low;
-  matrix    = Matrix.empty_matrix();
-  bots      = [Bot.initial_bot ()];
-  resolution = 0;
-}
+let state = ref (State.initial())
 
 let main () =
 

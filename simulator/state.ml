@@ -20,6 +20,14 @@ type state = {
   resolution: int;
 }
 
+let initial () = {
+  energy    = 0;
+  harmonics = Low;
+  matrix    = Matrix.empty_matrix();
+  bots      = [Bot.initial_bot ()];
+  resolution = 0;
+}
+
 let state_to_string state =
   (sprintf "Energy: %i\n" state.energy)
   ^ (sprintf "Harmonics: %s\n" (harmonics_to_string state.harmonics))

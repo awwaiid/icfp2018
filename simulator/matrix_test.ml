@@ -7,7 +7,7 @@ open Coordinate
 let _ =
   plan 4;
 
-  let c1:coordinate = 1, 2, 3 in
+  let c1:coordinate_t = 1, 2, 3 in
   let m1 = empty_matrix () in
 
   is "Starts void" (get m1 c1) Void;

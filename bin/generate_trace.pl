@@ -4,21 +4,11 @@ use v5.26;
 
 use lib 'lib';
 use Data::Dumper;
-use Getopt::Long;
 use JSON::XS;
 use File::Slurp;
 use Bot;
 
-my ($file,
-    $outfile,
-);
-
-GetOptions("file=s", => \$file,
-           "out=s", => \$outfile,
-);
-
-my $json = read_file( $file );
-my $model = decode_json( $json );
+my $model = decode_json( <> );
 my $res = $model->{resolution};
 my $matrix = $model->{model};
 my $bot = Bot->new(bid => 1, position => [0,0,0]);
@@ -50,4 +40,7 @@ push @cmd_array, $bot->move_to([0,0,0]);
 push @cmd_array, $bot->flip();
 push @cmd_array, $bot->halt();
 
-say Dumper(\@cmd_array);
+#say Dumper(\@cmd_array);
+my $json_cmds = encode_json( \@cmd_array );
+
+print $json_cmds;

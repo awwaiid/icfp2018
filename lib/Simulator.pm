@@ -35,4 +35,10 @@ class Simulator {
   method restore {
     return $self->send({cmd => "restore"});
   }
+
+  method is_grounded {
+    my $result = $self->send({cmd => "grounded-check"});
+    return $result->{is_grounded};
+  }
+
 }

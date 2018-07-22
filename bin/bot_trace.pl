@@ -26,9 +26,12 @@ my $botbrain = $brain_class->new(
   model => $model->{model}
 );
 
-my $cmd = {};
-while ($cmd->{cmd} ne 'halt') {
-  $cmd = $botbrain->get_command;
-  say encode_json( $cmd );
+my $last_cmd = {};
+while ($last_cmd->{cmd} ne 'halt') {
+  my (@cmds) = $botbrain->get_commands;
+  for my $cmd (@cmds) {
+    say encode_json( $cmd );
+  }
+  $last_cmd = $cmds[-1];
 }
 

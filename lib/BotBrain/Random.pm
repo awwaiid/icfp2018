@@ -6,7 +6,7 @@ class BotBrain::Random {
   has resolution => (is => 'rw');
   has matrix => (is => 'rw');
 
-  method get_command {
+  method get_commands {
     my @commands = qw( move_to fill flip halt );
     my $cmd = $commands[rand @commands];
     if($cmd eq 'move_to') {

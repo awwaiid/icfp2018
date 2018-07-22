@@ -17,3 +17,4 @@ I keep meaning to write down a log of events! Going to try again.
 * 2018-07-21 11:48 Sat - We are now going through and hand-fixing a few more to avoid high-harmonics
 * 2018-07-21 12:26 Sat - Submitted again! Now going to go wander about for coffee/lunch
 * 2018-07-21 15:21 Sat - Created parser for the model files and have it make a 3d matrix indicating which cells are filled (1) and not filled (0)
+* 2018-07-22 14:07 Sun - Forgot to update! We got a late start; working on making our own model building nanobots and hooking them to our simulator

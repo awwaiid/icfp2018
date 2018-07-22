@@ -10,7 +10,6 @@ let main () =
 
   let resolution = int_of_string Sys.argv.(1) in
   state := { !state with State.resolution = resolution };
-  printf "Model resolution: %i\n" !state.State.resolution;
   flush stdout;
 
   let trace_stream = Yojson.Basic.stream_from_channel stdin in

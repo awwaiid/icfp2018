@@ -16,3 +16,9 @@ let initial_bot () = {
 
 let bot_to_string bot =
   sprintf "{bid: %i, pos: %s}" bot.bid (coordinate_to_string bot.pos)
+
+let bot_to_json bot =
+  `Assoc [
+    "bid", `Int bot.bid;
+    "pos", coordinate_to_json bot.pos;
+  ]

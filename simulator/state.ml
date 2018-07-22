@@ -33,16 +33,23 @@ let state_to_string state =
   ^ (sprintf "Harmonics: %s\n" (harmonics_to_string state.harmonics))
   ^ (sprintf "Bots: %s\n" (String.concat ";" (List.map Bot.bot_to_string state.bots)))
 
+let state_to_json state =
+  `Assoc [
+    "energy", `Int state.energy;
+    "harmonics", `String (harmonics_to_string state.harmonics);
+    "bots", `List ( List.map Bot.bot_to_json state.bots );
+  ]
+
 let halt state bot args =
-  printf "... halting\n";
+  (* printf "... halting\n"; *)
   { state with bots = [] }
 
 let wait state bot args =
-  printf "... waiting\n";
+  (* printf "... waiting\n"; *)
   state
 
 let flip state bot args =
-  printf "... flipping\n";
+  (* printf "... flipping\n"; *)
   { state with harmonics = (opposite_harmonics state.harmonics) }
 
 let coord_arg name args =
@@ -79,15 +86,6 @@ let fill state bot args =
     }
   end
 
-let saved_state = ref []
-let save state bot args =
-  saved_state := state::!saved_state;
-  state
-
-let restore state bot args =
-  let state = List.hd !saved_state in
-  saved_state := List.tl !saved_state;
-  state
 
 let execute_cmd state cmd bot args =
   match cmd with
@@ -100,8 +98,6 @@ let execute_cmd state cmd bot args =
   | "fill" -> fill state bot args
 
   (* Custom Commands *)
-  | "save" -> save state bot args
-  | "restore" -> restore state bot args
 
   | _ -> raise (Error ("Invalid cmd: " ^ cmd))
 
@@ -113,25 +109,46 @@ let add_step_world_energy state =
 let add_step_bot_energy state =
   { state with energy = state.energy + 20 * (List.length state.bots) }
 
+let saved_state = ref []
+let save state bot args =
+  saved_state := state::!saved_state;
+  state
+
+let restore state bot args =
+  let state = List.hd !saved_state in
+  saved_state := List.tl !saved_state;
+  state
+
+let rec execute_bot_cmd state bot trace_stream =
+    let cmd_json = Stream.next trace_stream in
+    let cmd = cmd_json |> member "cmd" |> to_string in
+    match cmd with
+    | "save" ->
+      let state = save state bot cmd_json in
+      execute_bot_cmd state bot trace_stream
+    | "restore" ->
+      let state = restore state bot cmd_json in
+      execute_bot_cmd state bot trace_stream
+    | _ -> execute_cmd state cmd bot cmd_json
+
 let execute_step state trace_stream =
   let state = add_step_world_energy state in
   let state = add_step_bot_energy state in
   let bots = state.bots in
 
+  (* TODO: This should be a fold *)
   let state = ref state in (* Switch to ref during iter *)
-
   List.iter (fun bot ->
-    let cmd_json = Stream.next trace_stream in
-    let cmd = cmd_json |> member "cmd" |> to_string in
-    let sequence_num = cmd_json |> member "sequence" |> to_int in
-    printf "cmd %i: %s\n" sequence_num cmd;
-    state := execute_cmd !state cmd bot cmd_json
+    state := execute_bot_cmd !state bot trace_stream
   ) bots;
-  printf "State:\n%s" (state_to_string !state);
+
+  Yojson.Basic.to_channel stdout (state_to_json !state);
+  printf "\n";
+  (* printf "State:\n%s" (state_to_string !state); *)
 
   (* Note that we only really need to do this if there was a fill in this step *)
-  let is_grounded = Matrix.is_grounded !state.matrix in
-  printf "Grounded: %s\n" (string_of_bool is_grounded);
+  (* let is_grounded = Matrix.is_grounded !state.matrix in *)
+  (* printf "Grounded: %s\n" (string_of_bool is_grounded); *)
 
   flush stdout;
 

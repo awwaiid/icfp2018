@@ -5,6 +5,9 @@ type coordinate_t = int * int * int
 let coordinate_to_string (x, y, z) =
   sprintf "(%i,%i,%i)" x y z
 
+let coordinate_to_json (x, y, z) =
+  `List [ `Int x; `Int y; `Int z ]
+
 type coordinate_difference = int * int * int
 let coordinate_difference_to_string (x, y, z) =
   sprintf "<%i,%i,%i>" x y z

@@ -47,6 +47,7 @@ try {
   $out = json_to_nbt($json)
 }
 catch {
+  warn "caught error: $_";
   $out = nbt_to_json(<>);
 };
 

@@ -17,7 +17,8 @@ my $res = $model->{resolution};
 my $bot = Bot->new(bid => 1, position => [0,0,0]);
 
 my $brain_class = "BotBrain::$brain_name";
-eval "use $brain_class";
+eval("use $brain_class");
+warn $@ if $@;
 
 my $botbrain = $brain_class->new(
   bot => $bot,

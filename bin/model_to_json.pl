@@ -59,7 +59,7 @@ sub print_matrix {
   say "Columns = z Rows = x";
   for my $y (0..$r) {
     say "Y: $y";
-    for my $z (0..$r) {
+    for my $z (reverse 0..$r) {
       for my $x (0..$r) {
         print $model->[$x][$y][$z] . " ";
       }

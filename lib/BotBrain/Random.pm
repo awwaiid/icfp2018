@@ -4,7 +4,7 @@ class BotBrain::Random {
 
   has bot => (is => 'rw');
   has resolution => (is => 'rw');
-  has matrix => (is => 'rw');
+  has model => (is => 'rw');
 
   method get_commands {
     my @commands = qw( move_to fill flip halt );

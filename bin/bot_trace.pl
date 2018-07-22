@@ -14,7 +14,6 @@ GetOptions("brain=s", => \$brain_name);
 
 my $model = decode_json( <STDIN> );
 my $res = $model->{resolution};
-my $matrix = $model->{model};
 my $bot = Bot->new(bid => 1, position => [0,0,0]);
 
 my $brain_class = "BotBrain::$brain_name";

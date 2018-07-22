@@ -5,14 +5,11 @@ use Data::Dumper;
 use Getopt::Long;
 use JSON::XS;
 use File::Slurp;
+use Try::Tiny;
 
-my ($file,
-    $outfile,
-);
+my $outfile;
 
-GetOptions("file=s", => \$file,
-           "out=s", => \$outfile,
-);
+GetOptions("out=s", => \$outfile);
 
 my %dispatch = (
   'halt' => sub { '11111111' },
@@ -44,16 +41,14 @@ my %dispatch = (
 );
 
 my $out;
-if( $file =~ /nbt$/ ) {
-  $out = nbt_to_json($file);
+
+try {
+  my $json = decode_json(<>);
+  $out = json_to_nbt($json)
 }
-elsif( $file =~ /json$/ ) {
-  $out = json_to_nbt($file)
-}
-else {
-  warn "Whatta ya doin'! Either .json file or .nbt file! Bad monkey!";
-  exit;
-}
+catch {
+  $out = nbt_to_json(<>);
+};
 
 my $fh = *STDOUT;
 if( $outfile ) {
@@ -103,15 +98,11 @@ sub nbt_to_json {
     $cmd_cnt++;
   }
 
-  encode_json \@json;
+  return encode_json \@json;
 }
 
 sub json_to_nbt {
-  my $file = shift;
-
-  # combine two lines
-  my $json = read_file( $file );
-  my $commands = decode_json( $json );
+  my $commands = shift;
 
   my $out = undef;
   for my $cmd_struct ( @{ $commands } ) {
@@ -212,10 +203,11 @@ sub  get_lld_values {
 
 =head1 SYNOPSIS
 
-  tracifier.pl -f <infile.nbt>
-  tracifier.pl -f <infile.nbt> -o <output.json>
-  tracifier.pl -f <infile.json>
-  tracifier.pl -f <infile.json> -o <output.nbt>
+  tracifier.pl <infile.nbt>
+  tracifier.pl <infile.nbt> -o <output.json>
+  tracifier.pl <infile.json>
+  tracifier.pl <infile.json> -o <output.nbt>
+  <something that outputs json> | tracifier.pl
 
 =head1 DESCRIPTION
 

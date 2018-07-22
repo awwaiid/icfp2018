@@ -2,20 +2,36 @@ use Moops;
 use Data::Dumper;
 
 class Bot {
+  use List::Util qw{ min };
+
   has bid => (is => 'ro' );
   has position => (is => 'rw');
   has seeds => (is => 'rw');
 
   method move_to($dest) {
     my $diff = $self->position_diff( $dest );
-    my $cmd = { cmd => 'smove', lld => $diff };
+    my @cmds;
+
+    my $i = 0;
+    for my $pos ( @$diff ) {
+      my $forward = $pos > 0 ? 1 : -1;
+      while ( $pos != 0 ) {
+        $pos = abs($pos);
+        my $new_loc = [0,0,0];
+        $new_loc->[$i] = min($pos, 15) * $forward;
+        $pos -= $pos >  15 ? 15 : $pos;
+        push @cmds, { cmd => 'smove', lld => $new_loc };
+      }
+      $i++;
+    }
     $self->position([@{ $dest }]);
-    return $cmd;
+    return @cmds;
   }
 
   method fill($voxel) {
     my $diff = $self->position_diff( $voxel );
     my $cmd = { cmd => 'fill', nd => $diff };
+
     return $cmd;
   }
 

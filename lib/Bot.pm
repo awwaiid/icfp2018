@@ -2,22 +2,21 @@ use Moops;
 use Data::Dumper;
 
 class Bot {
-  use JSON::XS;
   has bid => (is => 'ro' );
   has position => (is => 'rw');
   has seeds => (is => 'rw');
 
   method move_to($dest) {
     my $diff = $self->position_diff( $dest );
-    my $json = { cmd => 'smove', lld => $diff };
+    my $cmd = { cmd => 'smove', lld => $diff };
     $self->position([@{ $dest }]);
-    return encode_json($json);
+    return $cmd;
   }
 
   method fill($voxel) {
     my $diff = $self->position_diff( $voxel );
-    my $json = { cmd => 'fill', nd => $diff };
-    return encode_json($json);
+    my $cmd = { cmd => 'fill', nd => $diff };
+    return $cmd;
   }
 
   method position_diff($pos) {
@@ -29,11 +28,11 @@ class Bot {
   }
 
   method halt() {
-    return encode_json({ cmd => 'halt'});
+    return { cmd => 'halt'};
   }
 
   method flip() {
-    return encode_json({ cmd => 'flip'});
+    return { cmd => 'flip'};
   }
 }
 

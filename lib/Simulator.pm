@@ -25,6 +25,14 @@ class Simulator {
   }
 
   method state {
-    return $self->send({cmd: "state"});
+    return $self->send({cmd => "state"});
+  }
+
+  method save {
+    return $self->send({cmd => "save"});
+  }
+
+  method restore {
+    return $self->send({cmd => "restore"});
   }
 }

@@ -40,6 +40,11 @@ let state_to_json state =
     "bots", `List ( List.map Bot.bot_to_json state.bots );
   ]
 
+let output_state state =
+  Yojson.Basic.to_channel stdout (state_to_json state);
+  printf "\n";
+  flush stdout
+
 let halt state bot args =
   (* printf "... halting\n"; *)
   { state with bots = [] }
@@ -119,37 +124,40 @@ let restore state bot args =
   saved_state := List.tl !saved_state;
   state
 
-let rec execute_bot_cmd state bot trace_stream =
+let output_grounded_status state =
+  let is_grounded = Matrix.is_grounded state.matrix in
+  let is_grounded_json = `Assoc [ "is_grounded", `Bool is_grounded ] in
+  Yojson.Basic.to_channel stdout is_grounded_json;
+  printf "\n";
+  flush stdout
+
+let rec execute_bot_cmd trace_stream state bot =
     let cmd_json = Stream.next trace_stream in
     let cmd = cmd_json |> member "cmd" |> to_string in
     match cmd with
+    | "state" ->
+      output_state state;
+      execute_bot_cmd trace_stream state bot
     | "save" ->
       let state = save state bot cmd_json in
-      execute_bot_cmd state bot trace_stream
+      output_state state;
+      execute_bot_cmd trace_stream state bot
     | "restore" ->
       let state = restore state bot cmd_json in
-      execute_bot_cmd state bot trace_stream
+      output_state state;
+      execute_bot_cmd trace_stream state bot
+    | "grounded-check" ->
+      output_grounded_status state;
+      execute_bot_cmd trace_stream state bot
     | _ -> execute_cmd state cmd bot cmd_json
 
 let execute_step state trace_stream =
   let state = add_step_world_energy state in
   let state = add_step_bot_energy state in
   let bots = state.bots in
+  let state = List.fold_left (execute_bot_cmd trace_stream) state bots in
 
-  (* TODO: This should be a fold *)
-  let state = ref state in (* Switch to ref during iter *)
-  List.iter (fun bot ->
-    state := execute_bot_cmd !state bot trace_stream
-  ) bots;
+  output_state state;
 
-  Yojson.Basic.to_channel stdout (state_to_json !state);
-  printf "\n";
-  (* printf "State:\n%s" (state_to_string !state); *)
 
-  (* Note that we only really need to do this if there was a fill in this step *)
-  (* let is_grounded = Matrix.is_grounded !state.matrix in *)
-  (* printf "Grounded: %s\n" (string_of_bool is_grounded); *)
-
-  flush stdout;
-
-  !state
+  state

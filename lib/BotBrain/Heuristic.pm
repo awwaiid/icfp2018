@@ -12,7 +12,6 @@ class BotBrain::Heuristic {
   method get_commands {
     my @cmd_array = ();
 
-    push @cmd_array, $self->bot->flip();
     #my $res = $sim->send( $bot->flip() );
     #say Dumper($res);
 
@@ -20,6 +19,8 @@ class BotBrain::Heuristic {
     my $forwardx = 0;
     my $r = $self->resolution - 1;
     for my $y (0..$r) {
+      push @cmd_array, $self->bot->flip() if $y == 1;
+
       for my $x (0..$r) {
         $forwardx = !$forwardx if $x == 0;
         my $new_x = $forwardx ? $x : $r - $x;
@@ -27,9 +28,10 @@ class BotBrain::Heuristic {
         for my $z (0..$r) {
           if( $z == 0 ) {
             $forwardz = !$forwardz;
-            last unless any { $_ } @{$self->model->[$x][$y]}[0..$r];
+#            last unless any { $_ } @{$self->model->[$new_x][$y]}[0..$r];
           }
           my $new_z = $forwardz ? $z : $r - $z;
+          next unless $self->model->[$new_x][$y][$new_z];
 
           push @cmd_array, $self->bot->move_to([$new_x, $y+1, $new_z]);
           push @cmd_array, $self->bot->fill([$new_x,$y,$new_z]) if $self->model->[$new_x][$y][$new_z];

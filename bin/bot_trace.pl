@@ -12,8 +12,8 @@ use Getopt::Long;
 my $brain_name;
 GetOptions("brain=s", => \$brain_name);
 
-my $model = decode_json( <STDIN> );
-my $res = $model->{resolution};
+my $models = decode_json( <STDIN> );
+my $res = $models->{resolution};
 my $bot = Bot->new(bid => 1, position => [0,0,0]);
 
 my $brain_class = "BotBrain::$brain_name";
@@ -23,7 +23,8 @@ warn $@ if $@;
 my $botbrain = $brain_class->new(
   bot => $bot,
   resolution => $res,
-  model => $model->{model}
+  source_model => $models->{source_model},
+  target_model => $models->{target_model},
 );
 
 my $last_cmd = {};

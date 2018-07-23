@@ -8,7 +8,8 @@ class BotBrain::Heuristic {
 
   has bot => (is => 'rw');
   has resolution => (is => 'rw');
-  has model => (is => 'rw');
+  has source_model => (is => 'rw');
+  has target_model => (is => 'rw');
 
   method get_commands {
     my @cmd_array = ();
@@ -20,6 +21,7 @@ class BotBrain::Heuristic {
     my $is_grounded = 1;
 
     my $forwardz = 0;
+    my $print_dir = 1;
     my $forwardx = 0;
     my $r = $self->resolution - 1;
     for my $y (0..$r) {
@@ -32,14 +34,15 @@ class BotBrain::Heuristic {
         for my $z (0..$r) {
           if( $z == 0 ) {
             $forwardz = !$forwardz;
-#            last unless any { $_ } @{$self->model->[$new_x][$y]}[0..$r];
+            $print_dir = -1 * $print_dir;
+#            last unless any { $_ } @{$self->target_model->[$new_x][$y]}[0..$r];
           }
           my $new_z = $forwardz ? $z : $r - $z;
-          next unless $self->model->[$new_x][$y][$new_z];
+          next unless $self->target_model->[$new_x][$y][$new_z + $print_dir];
 
           my @bot_cmds;
-          push @bot_cmds, $self->bot->move_to([$new_x, $y+1, $new_z]);
-          push @bot_cmds, $self->bot->fill([$new_x,$y,$new_z]) if $self->model->[$new_x][$y][$new_z];
+          push @bot_cmds, $self->bot->move_to([$new_x , $y, $new_z]);
+          push @bot_cmds, $self->bot->fill([$new_x,$y,$new_z + $print_dir]) if $self->target_model->[$new_x][$y][$new_z + $print_dir];
 
           for my $cmd (@bot_cmds) {
             $sim->send($cmd);

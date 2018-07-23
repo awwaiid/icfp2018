@@ -6,18 +6,38 @@ use Data::Dumper;
 use Getopt::Long;
 use JSON::XS;
 
-my ($file,
+my ($source,
+    $target,
     $outfile,
 );
 
-GetOptions("file=s", => \$file,
+GetOptions("source=s", => \$source,
+           "target=s", => \$target,
            "out=s", => \$outfile,
 );
 
-open my $fh, "<:raw", $file or die "Couldnt open file $file: $!";
-my $res_bytes = read $fh, my $bytes, 1;
-my ($resolution) = unpack "B8", $bytes;
-$resolution = oct("0b$resolution");
+my $resolution = undef;
+my ($src_fh, $tgt_fh);
+
+if($source) {
+  open $src_fh, "<:raw", $source or die "Couldnt open source $source: $!";
+  my $res_bytes = read $src_fh, my $bytes, 1;
+  ($resolution) = unpack "B8", $bytes;
+say "raw res: $resolution";
+  $resolution = oct("0b$resolution");
+}
+
+if($target) {
+  open $tgt_fh, "<:raw", $target or die "Couldnt open target $target: $!";
+  my $res_bytes = read $tgt_fh, my $bytes, 1;
+  ($resolution) = unpack "B8", $bytes;
+  $resolution = oct("0b$resolution");
+}
+
+if( !$source && !$target) {
+  warn "You haven't entered in a file at all. Exiting.";
+  exit;
+}
 
 #while( my $bytes_read = read $fh, my $bytes, 1 ) {
 #  my ($coords) = unpack "B8", $bytes;
@@ -28,23 +48,13 @@ $resolution = oct("0b$resolution");
 #  say "vec: " . Dumper($vec_coords);
 #}
 
-my $r = $resolution - 1;
-my $model = [[[]]];
-my @buffer = ();
-for my $x (0..$r) {
-  for my $y (0..$r) {
-    for my $z (0..$r) {
-      if( ! scalar @buffer ) {
-        my $bytes_read = read $fh, my $bytes, 1;
-        my ($b) = unpack "B8", $bytes;
-        @buffer = reverse split(//,$b)
-      }
-      $model->[$x][$y][$z] = shift @buffer;
-    }
-  }
-}
+my $json_hash = {
+  "resolution" => $resolution,
+  "source_model" => build_model_matrix($src_fh),
+  "target_model" => build_model_matrix($tgt_fh),
+};
 
-my $json = encode_json({ "resolution" => $resolution, "model" => $model});
+my $json = encode_json($json_hash);
 
 my $fh = *STDOUT;
 if( $outfile ) {
@@ -53,9 +63,40 @@ if( $outfile ) {
 
 print $fh $json;
 
-# print_matrix();
+#print_matrix($json_hash->{source_model});
+#print_matrix($json_hash->{target_model});
+
+
+
+##### Subs #####
+
+
+sub build_model_matrix {
+  my $fh = shift;
+  return undef unless $fh;
+
+  my $r = $resolution - 1;
+  my $model = [[[]]];
+  my @buffer = ();
+  for my $x (0..$r) {
+    for my $y (0..$r) {
+      for my $z (0..$r) {
+        if( ! scalar @buffer ) {
+          my $bytes_read = read $fh, my $bytes, 1;
+          my ($b) = unpack "B8", $bytes;
+          @buffer = reverse split(//,$b)
+        }
+        $model->[$x][$y][$z] = shift @buffer;
+      }
+    }
+  }
+
+  return $model;
+}
 
 sub print_matrix {
+  my $model = shift;
+  my $r = $resolution -1;
   say "Columns = z Rows = x";
   for my $y (0..$r) {
     say "Y: $y";
@@ -72,8 +113,12 @@ sub print_matrix {
 
 =head1 SYNOPSIS
 
-  model_to_json.pl -f <infile.mdl>
-  model_to_json.pl -f <infile.mdl> -o <output.json>
+  model_to_json.pl -s <source_file.mdl> -t <target_file.mdl>
+  model_to_json.pl -t <target_file.mdl>
+  model_to_json.pl -s <source_file.mdl>
+  model_to_json.pl -s <source_file.mdl> -t <target_file.mdl> -o <output.json>
+  model_to_json.pl -t <target_file.mdl> -o <output.json>
+  model_to_json.pl -s <source_file.mdl> -o <output.json>
 
 =head1 DESCRIPTION
 

@@ -1,7 +1,7 @@
 use Moops;
-use Data::Dumper;
 
 class Bot {
+  use Data::Dumper;
   use List::Util qw{ min };
 
   has bid => (is => 'ro' );
@@ -12,8 +12,9 @@ class Bot {
     my $diff = $self->position_diff( $dest );
     my @cmds;
 
-    my $i = 0;
-    for my $pos ( @$diff ) {
+    my @indices = $dest->[0] == 0 && $dest->[1] == 0 && $dest->[2] == 0 ? (0,1,2) : (1,0,2);   # if moving to destination can move in y dir first
+    for my $i ( @indices ) {
+      my $pos = $diff->[$i];
       my $forward = $pos > 0 ? 1 : -1;
       while ( $pos != 0 ) {
         $pos = abs($pos);
@@ -22,7 +23,6 @@ class Bot {
         $pos -= $pos >  15 ? 15 : $pos;
         push @cmds, { cmd => 'smove', lld => $new_loc };
       }
-      $i++;
     }
     $self->position([@{ $dest }]);
     return @cmds;
